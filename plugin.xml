@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://www.phonegap.com/ns/plugins/1.0"
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  id="cordova-plugin-imagepicker-plus"
+  version="0.0.1">
+
+    <name>ImagePicker Plus</name>
+
+    <description>
+        This plugin allows selection of multiple images from the camera roll / gallery in a phonegap app
+    </description>
+
+    <license>MIT</license>
+
+    <engines>
+        <engine name="cordova" version=">=10.0.0"/>
+        <engine name="cordova-android" version=">=9.0.0" />
+        <engine name="cordova-ios" version=">=6.1.1" />
+    </engines>
+
+    <js-module src="www/imagepicker.js" name="ImagePicker">
+        <clobbers target="plugins.imagePicker" />
+    </js-module>
+
+    <dependency id="cordova-plugin-file"/>
+
+    <!-- ios -->
+    <platform name="ios">
+        <config-file target="config.xml" parent="/*">
+            <feature name="ImagePicker">
+                <param name="ios-package" value="ImagePicker"/>
+            </feature>
+        </config-file>
+
+        <preference name="PHOTO_LIBRARY_USAGE_DESCRIPTION" default="This app requires access to the photo library to select pictures." />
+        <config-file target="*-Info.plist" parent="NSPhotoLibraryUsageDescription">
+          <string>$PHOTO_LIBRARY_USAGE_DESCRIPTION</string>
+        </config-file>
+
+        <header-file src="src/ios/ImagePicker.h" />
+        <source-file src="src/ios/ImagePicker.m" />
+    </platform>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="ImagePicker">
+                <param name="android-package" value="com.imagepicker.plus.ImagePicker"/>
+            </feature>
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="application">
+            <provider
+                android:name="com.imagepicker.plus.ImagePickerProvider"
+                android:authorities="${applicationId}.imagepickerprovider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+                <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/imagepicker_provider_paths" />
+            </provider>
+        </config-file>
+  
+        <framework src="androidx.activity:activity:1.3.1" />
+        <framework src="androidx.fragment:fragment:1.3.6" />
+        <framework src="androidx.exifinterface:exifinterface:1.3.3" />
+
+        <!-- Enable data binding for tedimagepicker -->
+        <framework src="io.github.ParkSangGwon:tedimagepicker:1.2.8" />
+        <framework src="src/android/build.gradle" custom="true" type="gradleReference"/>
+
+        <source-file src="src/android/res/xml/imagepicker_provider_paths.xml" target-dir="res/xml" />
+
+        <source-file src="src/android/com/imagepicker/plus/ImagePicker.java" target-dir="src/com/imagepicker/plus" />
+        <source-file src="src/android/com/imagepicker/plus/ImagePickerProvider.java" target-dir="src/com/imagepicker/plus" />
+        <source-file src="src/android/com/imagepicker/plus/Utils.java" target-dir="src/com/imagepicker/plus" />
+        <source-file src="src/android/com/imagepicker/plus/Options.java" target-dir="src/com/imagepicker/plus" />
+    </platform>
+
+    <!-- browser -->
+    <platform name="browser">
+      <config-file parent="/*" target="config.xml">
+  				<feature name="ImagePicker">
+  						<param name="browser-package" value="ImagePicker"/>
+  				</feature>
+  		</config-file>
+
+      <!-- Required for browserify: we always link module below as there is conditional reference
+      to this module from requestFileSystem and resolveLocalFileSystemURI modules. -->
+      <js-module src="www/browser/isChrome.js" name="isChrome">
+          <runs />
+      </js-module>
+
+  		<js-module src="src/browser/ImagePicker.js" name="ImagePickerProxy">
+  				<runs/>
+  		</js-module>
+    </platform>
+</plugin>
