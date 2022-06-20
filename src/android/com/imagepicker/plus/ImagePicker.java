@@ -4,9 +4,6 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Build;
 
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
@@ -24,7 +21,7 @@ public class ImagePicker extends CordovaPlugin {
     private static final String ACTION_HAS_READ_PERMISSION = "hasReadPermission";
     private static final String ACTION_REQUEST_READ_PERMISSION = "requestReadPermission";
     
-    private static final int PERMISSION_REQUEST_CODE = 100;
+    private static final int PERMISSION_REQUEST_CODE = 1501;
 
     private CallbackContext callbackContext;
     private Options options;
@@ -74,17 +71,28 @@ public class ImagePicker extends CordovaPlugin {
     }
 
     private boolean hasReadPermission() {
-        return Build.VERSION.SDK_INT < 23 ||
-            PackageManager.PERMISSION_GRANTED == ContextCompat.checkSelfPermission(this.cordova.getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE);
+        return Build.VERSION.SDK_INT < 23 || cordova.hasPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
     }
 
     private void requestReadPermission() {
-        if (!hasReadPermission()) {    
-            ActivityCompat.requestPermissions(
-                this.cordova.getActivity(),
-                new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},
-                PERMISSION_REQUEST_CODE);
+        if (hasReadPermission()) {
+            callbackContext.success();
+            return;
         }
-        callbackContext.success();
+        cordova.requestPermission(this, PERMISSION_REQUEST_CODE, Manifest.permission.READ_EXTERNAL_STORAGE);
+    }
+
+    public void onRequestPermissionResult(int requestCode, String[] permissions,
+                                          int[] grantResults) {
+        if (requestCode != PERMISSION_REQUEST_CODE) {
+            return;
+        }
+        if (permissions[0].equals(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                callbackContext.success();
+            } else {
+                callbackContext.error("Permission denied");
+            }
+        }
     }
 }
